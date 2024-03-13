@@ -19,4 +19,6 @@ public class CoursesController {
        List<CoursesDTO> allCourses = coursesService.getCourses();
         return new ResponseEntity<>(allCourses, HttpStatus.OK);
     }
+
+
 }
