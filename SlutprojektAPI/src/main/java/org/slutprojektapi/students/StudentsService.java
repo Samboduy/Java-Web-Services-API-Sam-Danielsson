@@ -21,7 +21,9 @@ public class StudentsService {
    }
    List<StudentsDTO>getStudentsById(Long id) {
        List<StudentsDTO> studentsDTO = new ArrayList<>();
-       studentsRepository.findById(id).map(student -> studentsDTO.add(this.mapToDTO(student)));
+       studentsRepository.findById(id).map(student -> studentsDTO.add(this.mapToDTO(student)))
+                       .orElseThrow(() -> new StudentNotFoundException("Could not find student with id:" + id));
+
        return studentsDTO;
    }
     List<StudentsDTO>getStudentsByFName(String fName) {

@@ -17,7 +17,7 @@ public class StudentsCoursesController {
     @Autowired
      private StudentsCoursesService studentsCoursesService;
 
-    @GetMapping(value = "/studentscourses/", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/studentscourses", produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<StudentsCoursesDTO>> findAllStudents() {
         return new ResponseEntity<>(studentsCoursesService.getAllStudentsCourses(), HttpStatus.OK);
     }

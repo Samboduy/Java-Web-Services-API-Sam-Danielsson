@@ -27,8 +27,12 @@ public class StudentsController {
     @GetMapping(value = "/students/student/{id}" ,produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<List<StudentsDTO>> getStudentById(@PathVariable(value = "id") Long id) {
-        List<StudentsDTO> allStudents = studentsService.getStudentsById(id);
-        return new ResponseEntity<>(allStudents, HttpStatus.OK);
+        if (id<0) {
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        } else {
+            List<StudentsDTO> student = studentsService.getStudentsById(id);
+            return new ResponseEntity<>(student, HttpStatus.OK);
+        }
     }
     @GetMapping(value = "/students/firstname/{fName}" ,produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
