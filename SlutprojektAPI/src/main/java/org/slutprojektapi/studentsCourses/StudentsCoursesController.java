@@ -6,9 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,6 +18,16 @@ public class StudentsCoursesController {
     @GetMapping(value = "/studentscourses", produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<StudentsCoursesDTO>> findAllStudents() {
         return new ResponseEntity<>(studentsCoursesService.getAllStudentsCourses(), HttpStatus.OK);
+    }
+    @PostMapping(value = "/addStudentCourse")
+    public ResponseEntity<List<StudentsCoursesDTO>> createStudentCourse(@RequestParam(value = "studentId")Long studentId,
+                                                      @RequestParam(value = "courseId") Long courseId, StudentsCourses studentsCourse){
+        return studentsCoursesService.saveStudentCourse(studentsCourse,studentId,courseId);
+    }
+    @PostMapping(value = "/removeStudentCourse")
+    public ResponseEntity<List<StudentsCoursesDTO>> removeStudentCourse(@RequestParam(value = "studentCourseId")Long studentCourseId){
+        studentsCoursesService.removeStudentCourse(studentCourseId);
+        return new ResponseEntity<>(studentsCoursesService.getAllStudentsCourses(),HttpStatus.OK);
     }
 
 }

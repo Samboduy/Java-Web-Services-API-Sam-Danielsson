@@ -1,5 +1,7 @@
 package org.slutprojektapi.courses;
 
+import org.slutprojektapi.students.Students;
+import org.slutprojektapi.students.StudentsDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -43,8 +45,23 @@ public class CoursesController {
         List<CoursesDTO> course = coursesService.getCoursesByDescriptionContaining(word);
         return new ResponseEntity<>(course, HttpStatus.OK);
     }
-
-
-
-
+    @PostMapping(value = "/createCourse", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Courses> createCourse(@RequestParam(value = "courseName")String courseName,
+                                                      @RequestParam(value = "description") String description, Courses course){
+        if(courseName.trim().isEmpty()||description.trim().isEmpty()) {
+         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } else {
+            course.setName(courseName);
+            course.setDescription(description);
+            course = coursesService.saveCourse(course);
+            return new ResponseEntity<>(course, HttpStatus.CREATED);
+        }
+    }
+    @PostMapping(value = "/removeCourse", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<CoursesDTO>> removeCourse(
+            @RequestParam(value = "id") Long id
+    ) {
+        coursesService.removeCourseById(id);
+        return new ResponseEntity<>(coursesService.getCourses(), HttpStatus.OK);
+    }
 }

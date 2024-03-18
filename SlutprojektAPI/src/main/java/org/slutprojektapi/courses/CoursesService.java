@@ -66,7 +66,10 @@ public class CoursesService {
         dto.setStudents(courses.getStudents().stream().map(this::mapToDTO).collect(Collectors.toList()));
         return dto;
     }
-
-
-
+    Courses saveCourse(Courses course) {
+        return coursesRepository.save(course);
+    }
+     public void removeCourseById(Long id) {
+        coursesRepository.deleteById(id);
+    }
 }

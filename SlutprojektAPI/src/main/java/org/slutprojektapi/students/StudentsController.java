@@ -24,9 +24,9 @@ public class StudentsController {
         return new ResponseEntity<>(allStudents, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/students/student/{id}" ,produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/students/student" ,produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<List<StudentsDTO>> getStudentById(@PathVariable(value = "id") Long id) {
+    ResponseEntity<List<StudentsDTO>> getStudentById(@RequestParam(value = "id") Long id) {
         if (id<0) {
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         } else {
@@ -53,5 +53,23 @@ public class StudentsController {
         return new ResponseEntity<>(allStudents, HttpStatus.OK);
     }
 
+    @PostMapping(value = "/createStudent")
+    public ResponseEntity<Students> createStudentFrom(@RequestParam(value = "fName")String fName,
+                                                      @RequestParam(value = "lName") String lName,
+                                                      @RequestParam(value = "town") String town, Students student){
+        student.setFName(fName);
+        student.setLName(lName);
+        student.setTown(town);
+        student = studentsService.saveStudent(student);
+        return new ResponseEntity<>(student, HttpStatus.CREATED);
+    }
+    @PostMapping(value = "/removeStudent", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StudentsDTO>> removeStudent(
+            @RequestParam(value = "id") Long id
+    ){
+        System.out.println(id);
+        studentsService.removeStudentById(id);
+        return new ResponseEntity<>(studentsService.getAllStudents(), HttpStatus.OK);
+    }
 
 }

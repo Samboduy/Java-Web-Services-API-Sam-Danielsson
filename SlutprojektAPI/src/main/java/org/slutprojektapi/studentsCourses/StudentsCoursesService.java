@@ -9,7 +9,9 @@ import org.slutprojektapi.students.StudentsDTO;
 import org.slutprojektapi.students.StudentsRepository;
 import org.slutprojektapi.students.StudentsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -32,7 +34,23 @@ public class StudentsCoursesService {
         studentsCoursesRepository.findAll().forEach(studentsCourses -> studentsCoursesDTOS.add(this.mapToDTO(studentsCourses)));
         return studentsCoursesDTOS;
     }
-
+    public ResponseEntity<List<StudentsCoursesDTO>> saveStudentCourse(StudentsCourses studentsCourse,Long studentId,Long courseId) {
+        List<StudentsCoursesDTO> studentsCoursesDTOS = new ArrayList<>();
+        if (studentsRepository.findById(studentId).isPresent() && coursesRepository.findById(courseId).isPresent()){
+            Students student = studentsRepository.findById(studentId).get();
+            Courses course = coursesRepository.findById(courseId).get();
+            studentsCourse.setCourses(course);
+            studentsCourse.setStudents(student);
+            studentsCoursesRepository.save(studentsCourse);
+            studentsCoursesDTOS.add(mapToDTO(studentsCourse));
+            return new ResponseEntity<>(studentsCoursesDTOS, HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>(studentsCoursesDTOS, HttpStatus.NOT_ACCEPTABLE);
+        }
+    }
+    public void removeStudentCourse(Long studentCourseId){
+        studentsCoursesRepository.deleteById(studentCourseId);
+    }
     public StudentsCoursesDTO mapToDTO(StudentsCourses studentsCourses) {
         StudentsCoursesDTO dto = new StudentsCoursesDTO();
         dto.setId(studentsCourses.getId());
@@ -45,29 +63,4 @@ public class StudentsCoursesService {
         dto.setTown(students.getTown());
         return dto;
     }
-
-    public List<StudentsDTO> getAllStudents() {
-        List<StudentsDTO> studentsDTO = new ArrayList<>();
-        studentsRepository.findAll().forEach(students -> studentsDTO.add(this.mapToDTO(students)));
-        return studentsDTO;
-    }
-
-    private CoursesDTO mapToDTO(Courses courses) {
-        CoursesDTO dto = new CoursesDTO();
-        dto.setId(courses.getId());
-        dto.setName(courses.getName());
-        dto.setDescription(courses.getDescription());
-        return dto;
-    }
-    private StudentsDTO mapToDTO(Students students) {
-        StudentsDTO dto = new StudentsDTO();
-        dto.setId(students.getId());
-        dto.setFName(students.getFName());
-        dto.setLName(students.getLName());
-        dto.setTown(students.getTown());
-        dto.setCourses(students.getCourses().stream().map(this::mapToDTO).collect(Collectors.toList()));
-        return dto;
-    }
-
-
 }

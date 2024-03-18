@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +27,7 @@ public class StudentsService {
 
        return studentsDTO;
    }
+
     List<StudentsDTO>getStudentsByFName(String fName) {
         List<StudentsDTO> studentsDTO = new ArrayList<>();
         studentsRepository.findAllByfNameEquals(fName).forEach(student -> studentsDTO.add(this.mapToDTO(student)));
@@ -64,6 +66,12 @@ public class StudentsService {
         dto.setTown(students.getTown());
         dto.setCourses(students.getCourses().stream().map(this::mapToDTO).collect(Collectors.toList()));
         return dto;
+    }
+    public Students  saveStudent(Students student) {
+       return studentsRepository.save(student);
+    }
+    public void removeStudentById(Long id) {
+        studentsRepository.deleteById(id);
     }
 
 }
