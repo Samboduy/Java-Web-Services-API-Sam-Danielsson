@@ -1,8 +1,12 @@
 package org.slutprojektapi.courses;
 
+import org.apache.logging.log4j.message.Message;
+import org.slutprojektapi.exceptions.EntityExceptionAdvice;
+import org.slutprojektapi.exceptions.EntityNotFoundException;
 import org.slutprojektapi.students.Students;
 import org.slutprojektapi.students.StudentsDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,22 +27,32 @@ public class CoursesService {
     }
     public List<CoursesDTO> getCourseById(Long id) {
         List<CoursesDTO> coursesDTOS = new ArrayList<>();
-        coursesRepository.findById(id).map(courses ->coursesDTOS.add(this.mapToDTO(courses)));
+        coursesRepository.findById(id).map(courses ->coursesDTOS.add(this.mapToDTO(courses)))
+                .orElseThrow(()-> new EntityNotFoundException( HttpStatus.NOT_FOUND +" could not find course with id:" + id));
         return coursesDTOS;
     }
     public List<CoursesDTO> getCoursesByName(String name) {
         List<CoursesDTO> coursesDTOS = new ArrayList<>();
         coursesRepository.findAllByNameEquals(name).forEach(courses ->coursesDTOS.add(this.mapToDTO(courses)));
+        if (coursesDTOS.isEmpty()){
+            throwExceptionNotFound(HttpStatus.NOT_FOUND + " Could not find course by name:" + name);
+        }
         return coursesDTOS;
     }
     public List<CoursesDTO> getCoursesByNameContaining(String word) {
         List<CoursesDTO> coursesDTOS = new ArrayList<>();
         coursesRepository.findAllByNameContaining(word).forEach(courses ->coursesDTOS.add(this.mapToDTO(courses)));
+        if (coursesDTOS.isEmpty()) {
+            throwExceptionNotFound(HttpStatus.NOT_FOUND + " Could not find course by word:" + word);
+        }
         return coursesDTOS;
     }
     public List<CoursesDTO> getCoursesByDescriptionContaining(String word) {
         List<CoursesDTO> coursesDTOS = new ArrayList<>();
         coursesRepository.findAllByDescriptionContaining(word).forEach(courses ->coursesDTOS.add(this.mapToDTO(courses)));
+       if (coursesDTOS.isEmpty()){
+           throwExceptionNotFound(HttpStatus.NOT_FOUND + " Could not find course containing:" + word);
+       }
         return coursesDTOS;
     }
 
@@ -66,10 +80,17 @@ public class CoursesService {
         dto.setStudents(courses.getStudents().stream().map(this::mapToDTO).collect(Collectors.toList()));
         return dto;
     }
+    private void throwExceptionNotFound(String message) {
+        throw new EntityNotFoundException(message);
+    }
     Courses saveCourse(Courses course) {
         return coursesRepository.save(course);
     }
      public void removeCourseById(Long id) {
-        coursesRepository.deleteById(id);
+        if (coursesRepository.existsById(id)) {
+            throwExceptionNotFound(HttpStatus.NOT_FOUND + " Could not find and delete course with id:" + id);
+        } else {
+            coursesRepository.deleteById(id);
+        }
     }
 }

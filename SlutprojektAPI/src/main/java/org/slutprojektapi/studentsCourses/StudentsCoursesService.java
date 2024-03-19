@@ -4,6 +4,7 @@ import org.slutprojektapi.courses.Courses;
 import org.slutprojektapi.courses.CoursesDTO;
 import org.slutprojektapi.courses.CoursesRepository;
 import org.slutprojektapi.courses.CoursesService;
+import org.slutprojektapi.exceptions.EntityNotFoundException;
 import org.slutprojektapi.students.Students;
 import org.slutprojektapi.students.StudentsDTO;
 import org.slutprojektapi.students.StudentsRepository;
@@ -32,35 +33,50 @@ public class StudentsCoursesService {
     public List<StudentsCoursesDTO> getAllStudentsCourses() {
         List<StudentsCoursesDTO> studentsCoursesDTOS = new ArrayList<>();
         studentsCoursesRepository.findAll().forEach(studentsCourses -> studentsCoursesDTOS.add(this.mapToDTO(studentsCourses)));
+        throwExceptionNotFound(HttpStatus.NOT_FOUND + "Could not get students relationship with courses");
         return studentsCoursesDTOS;
     }
-    public ResponseEntity<List<StudentsCoursesDTO>> saveStudentCourse(StudentsCourses studentsCourse,Long studentId,Long courseId) {
+    public List<StudentsCoursesDTO> saveStudentCourse(StudentsCourses studentsCourse,Long studentId,Long courseId) {
         List<StudentsCoursesDTO> studentsCoursesDTOS = new ArrayList<>();
-        if (studentsRepository.findById(studentId).isPresent() && coursesRepository.findById(courseId).isPresent()){
+        if (studentsRepository.existsById(studentId) && coursesRepository.existsById(courseId)){
             Students student = studentsRepository.findById(studentId).get();
             Courses course = coursesRepository.findById(courseId).get();
             studentsCourse.setCourses(course);
             studentsCourse.setStudents(student);
             studentsCoursesRepository.save(studentsCourse);
             studentsCoursesDTOS.add(mapToDTO(studentsCourse));
-            return new ResponseEntity<>(studentsCoursesDTOS, HttpStatus.OK);
+            return studentsCoursesDTOS;
         }else {
-            return new ResponseEntity<>(studentsCoursesDTOS, HttpStatus.NOT_ACCEPTABLE);
+           throwExceptionNotFound(HttpStatus.NOT_FOUND +"Could not find student with id:"
+                   + studentId + " or could not find course with id:" + courseId);
+           return studentsCoursesDTOS;
         }
     }
     public void removeStudentCourse(Long studentCourseId){
-        studentsCoursesRepository.deleteById(studentCourseId);
+        if (studentsCoursesRepository.existsById(studentCourseId)) {
+            studentsCoursesRepository.deleteById(studentCourseId);
+        } else {
+           throwExceptionNotFound( HttpStatus.NOT_FOUND + " Could not find studentcourse by id:" + studentCourseId + " to delete");
+        }
     }
     public StudentsCoursesDTO mapToDTO(StudentsCourses studentsCourses) {
         StudentsCoursesDTO dto = new StudentsCoursesDTO();
         dto.setId(studentsCourses.getId());
         Courses course = studentsCourses.getCourses();
+        if (course !=null) {
+            dto.setCoursesId(course.getId());
+            dto.setCourseName(course.getName());
+        }
         Students students = studentsCourses.getStudents();
-        dto.setCoursesId(course.getId());
-        dto.setCourseName(course.getName());
-        dto.setStudentsId(students.getId());
-        dto.setStudentsName(students.getFName() + " " + students.getLName());
-        dto.setTown(students.getTown());
+        if (students !=null) {
+            dto.setStudentsId(students.getId());
+            dto.setStudentsName(students.getFName() + " " + students.getLName());
+            dto.setTown(students.getTown());
+        }
         return dto;
+    }
+
+    private void throwExceptionNotFound(String message) {
+        throw new EntityNotFoundException(message);
     }
 }

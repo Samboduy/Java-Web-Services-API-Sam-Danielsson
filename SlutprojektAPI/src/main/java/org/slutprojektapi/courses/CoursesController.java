@@ -1,5 +1,6 @@
 package org.slutprojektapi.courses;
 
+import org.slutprojektapi.exceptions.EntityNotFoundException;
 import org.slutprojektapi.students.Students;
 import org.slutprojektapi.students.StudentsDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +19,22 @@ public class CoursesController {
     @GetMapping(value = "/courses",produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<CoursesDTO>> getCourses() {
        List<CoursesDTO> allCourses = coursesService.getCourses();
+       if (allCourses.isEmpty()){
+           throw new EntityNotFoundException( HttpStatus.NOT_FOUND + " Could not get all Courses");
+       }
         return new ResponseEntity<>(allCourses, HttpStatus.OK);
     }
 
     @GetMapping(value = "/courses/course/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<List<CoursesDTO>> getCoursesById(@PathVariable(value = "id")Long id) {
-        List<CoursesDTO> course = coursesService.getCourseById(id);
-        return new ResponseEntity<>(course, HttpStatus.OK);
+        if (id<=0) {
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        }
+        else {
+            List<CoursesDTO> course = coursesService.getCourseById(id);
+            return new ResponseEntity<>(course, HttpStatus.OK);
+        }
     }
     @GetMapping(value = "/courses/name/{name}",produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -47,7 +56,7 @@ public class CoursesController {
     }
     @PostMapping(value = "/createCourse", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Courses> createCourse(@RequestParam(value = "courseName")String courseName,
-                                                      @RequestParam(value = "description") String description, Courses course){
+                                                      @RequestParam(value = "description",required = false) String description, Courses course){
         if(courseName.trim().isEmpty()||description.trim().isEmpty()) {
          return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } else {
@@ -59,9 +68,12 @@ public class CoursesController {
     }
     @PostMapping(value = "/removeCourse", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<CoursesDTO>> removeCourse(
-            @RequestParam(value = "id") Long id
-    ) {
-        coursesService.removeCourseById(id);
-        return new ResponseEntity<>(coursesService.getCourses(), HttpStatus.OK);
+            @RequestParam(value = "id",required = false) Long id) {
+        if (id.describeConstable().isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } else {
+            coursesService.removeCourseById(id);
+            return new ResponseEntity<>(coursesService.getCourses(), HttpStatus.OK);
+        }
     }
 }

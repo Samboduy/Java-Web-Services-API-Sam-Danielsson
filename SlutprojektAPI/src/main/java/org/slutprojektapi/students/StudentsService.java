@@ -2,13 +2,12 @@ package org.slutprojektapi.students;
 
 import org.slutprojektapi.courses.Courses;
 import org.slutprojektapi.courses.CoursesDTO;
+import org.slutprojektapi.exceptions.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,7 +22,7 @@ public class StudentsService {
    List<StudentsDTO>getStudentsById(Long id) {
        List<StudentsDTO> studentsDTO = new ArrayList<>();
        studentsRepository.findById(id).map(student -> studentsDTO.add(this.mapToDTO(student)))
-                       .orElseThrow(() -> new StudentNotFoundException("Could not find student with id:" + id));
+                       .orElseThrow(() -> new EntityNotFoundException("Could not find student with id:" + id));
 
        return studentsDTO;
    }
@@ -71,7 +70,11 @@ public class StudentsService {
        return studentsRepository.save(student);
     }
     public void removeStudentById(Long id) {
-        studentsRepository.deleteById(id);
+       if (studentsRepository.existsById(id)) {
+           studentsRepository.deleteById(id);
+       } else {
+           throw new EntityNotFoundException("Could not find student with id:" + id + " to delete");
+       }
     }
 
 }

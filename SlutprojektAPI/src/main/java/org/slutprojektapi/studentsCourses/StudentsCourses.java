@@ -24,9 +24,13 @@ public class StudentsCourses {
     @JoinColumn(name = "students_id",
     referencedColumnName = "id")
     private Students students;
+    @Column(name = "students_Id")
+    private Long students_id;
     @ManyToOne
     @JoinColumn(name = "courses_id",
     referencedColumnName = "id")
     private Courses courses;
+    @Column(name = "courses_Id")
+    private Long courses_Id;
 
 }
